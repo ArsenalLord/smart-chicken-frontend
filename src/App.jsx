@@ -548,15 +548,14 @@ useEffect(() => {
     <ResponsiveContainer width="100%" height={250}>
       <LineChart data={historico}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="horario"
-          tick={{ fontSize: 11 }}
-          tickFormatter={(valor) =>
-            new Date(valor).toLocaleTimeString("pt-BR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          }
-        />
+       
+<XAxis
+  dataKey="horario"
+  tick={{ fontSize: 9 }}
+  interval="preserveStartEnd"
+  minTickGap={20}
+/>
+
         <YAxis />
 
 
