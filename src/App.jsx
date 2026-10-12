@@ -65,6 +65,7 @@ const atualizarHistorico = useCallback(async () => {
   try {
     const dados = await buscarHistorico();
 
+
     const leituras = Array.isArray(dados)
       ? dados
       : Array.isArray(dados.leituras)
@@ -73,20 +74,28 @@ const atualizarHistorico = useCallback(async () => {
           ? dados.historico
           : [];
 
-    setHistorico(
-      leituras
-        .slice()
-        .reverse()
-        .map((leitura) => ({
-          ...leitura,
-          horario: leitura.timestamp
-            ? new Date(leitura.timestamp).toLocaleTimeString("pt-BR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "--:--",
-        }))
-    );
+
+
+setHistorico(
+  leituras
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(a.timestamp).getTime() -
+        new Date(b.timestamp).getTime()
+    )
+    .map((leitura) => ({
+      ...leitura,
+      horario: leitura.timestamp
+        ? new Date(leitura.timestamp).toLocaleTimeString("pt-BR", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "--:--",
+    }))
+);
+
+
   } catch (e) {
     console.error("Erro ao carregar histórico:", e);
   }
@@ -123,7 +132,7 @@ useEffect(() => {
   const alertas = Array.isArray(sensores?.alertas)
     ? sensores.alertas
     : [];
-    
+
   const historicoFiltrado = historico
   .filter((leitura) =>
     filtroCenario === "todos" || leitura.cenario === filtroCenario
@@ -400,7 +409,7 @@ useEffect(() => {
             </div>
           </article>
 
-            
+
         </section>
 <section
   style={{
@@ -425,7 +434,35 @@ useEffect(() => {
           <CartesianGrid strokeDasharray="3 3" stroke="#e1e9e3" />
           <XAxis dataKey="horario" tick={{ fontSize: 11 }} />
           <YAxis domain={["auto", "auto"]} tick={{ fontSize: 11 }} />
-          <Tooltip />
+
+
+<Tooltip
+  labelFormatter={(valor, payload) => {
+    const registro = payload?.[0]?.payload;
+    const timestamp = registro?.timestamp;
+
+    if (!timestamp) {
+      return "Horário indisponível";
+    }
+
+    const data = new Date(timestamp);
+
+    if (Number.isNaN(data.getTime())) {
+      return "Horário indisponível";
+    }
+
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }}
+  formatter={(valor) => [
+    `${valor} °C`,
+    "Temperatura",
+  ]}
+/>
+
+
           <Legend />
           <Line
             type="monotone"
@@ -456,7 +493,33 @@ useEffect(() => {
           <CartesianGrid strokeDasharray="3 3" stroke="#e1e9e3" />
           <XAxis dataKey="horario" tick={{ fontSize: 11 }} />
           <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-          <Tooltip />
+
+<Tooltip
+  labelFormatter={(valor, payload) => {
+    const registro = payload?.[0]?.payload;
+    const timestamp = registro?.timestamp;
+
+    if (!timestamp) {
+      return "Horário indisponível";
+    }
+
+    const data = new Date(timestamp);
+
+    if (Number.isNaN(data.getTime())) {
+      return "Horário indisponível";
+    }
+
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }}
+  formatter={(valor) => [
+    `${valor}%`,
+    "Umidade",
+  ]}
+/>
+
           <Legend />
           <Line
             type="monotone"
@@ -483,10 +546,9 @@ useEffect(() => {
 
   {historico.length > 0 ? (
     <ResponsiveContainer width="100%" height={250}>
-      <LineChart data={[...historico].reverse()}>
+      <LineChart data={historico}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis
-          dataKey="timestamp"
+        <XAxis dataKey="horario"
           tick={{ fontSize: 11 }}
           tickFormatter={(valor) =>
             new Date(valor).toLocaleTimeString("pt-BR", {
@@ -496,7 +558,35 @@ useEffect(() => {
           }
         />
         <YAxis />
-        <Tooltip />
+
+
+<Tooltip
+  labelFormatter={(valor, payload) => {
+    const registro = payload?.[0]?.payload;
+    const timestamp = registro?.timestamp;
+
+    if (!timestamp) {
+      return "Horário indisponível";
+    }
+
+    const data = new Date(timestamp);
+
+    if (Number.isNaN(data.getTime())) {
+      return "Horário indisponível";
+    }
+
+    return data.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }}
+  formatter={(valor) => [
+    `${valor}`,
+    "Luminosidade",
+  ]}
+/>
+
+
         <Legend />
         <Line
           type="monotone"
@@ -636,7 +726,7 @@ useEffect(() => {
         </thead>
 
         <tbody>
-          
+
         {historicoFiltrado.map((leitura, indice) => (
 
             <tr
@@ -741,7 +831,7 @@ useEffect(() => {
     )}
   </section>
 )}
-        {pagina === "alertas" && ( 
+        {pagina === "alertas" && (
         <section style={cartao}>
           <div style={{
             display: "flex",
@@ -806,7 +896,7 @@ useEffect(() => {
             </p>
                  )}
         </section>
-       
+
         )}
         <footer style={{
           textAlign: "center",
