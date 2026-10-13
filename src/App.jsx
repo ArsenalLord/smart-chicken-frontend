@@ -74,6 +74,22 @@ function formatarNumero(valor, casas = 1) {
 
 
 
+// Curva educativa de luminosidade (0-900 unidades) baseada no horário local.
+// Não depende do Wokwi nem altera a API/backend.
+function calcularLuminosidade(data = new Date()) {
+  const hora = data.getHours() + data.getMinutes() / 60;
+  if (hora < 5 || hora >= 20) return 8;
+  if (hora < 6) return Math.round(8 + (hora - 5) * 52);
+  if (hora < 7) return Math.round(60 + (hora - 6) * 190);
+  if (hora < 16) return Math.round(250 + 650 * Math.sin(((hora - 7) / 9) * Math.PI));
+  if (hora < 17) return Math.round(500 - (hora - 16) * 250);
+  if (hora < 18) return Math.round(250 - (hora - 17) * 170);
+  if (hora < 19) return Math.round(80 - (hora - 18) * 60);
+  return Math.round(20 - (hora - 19) * 12);
+}
+
+const LIMITE_LUZ_EXTERNA = 120;
+
 function App() {
 
   const [sensores, setSensores] = useState(null);
@@ -93,6 +109,7 @@ function App() {
   const [alterandoCenario, setAlterandoCenario] = useState(false);
 
   const [pagina, setPagina] = useState("dashboard");
+  const [agora, setAgora] = useState(() => new Date());
 
 
 
@@ -205,6 +222,12 @@ setHistorico(
 
 useEffect(() => {
 
+  const relogio = setInterval(() => setAgora(new Date()), 30000);
+  return () => clearInterval(relogio);
+}, []);
+
+useEffect(() => {
+
   atualizarSensores();
 
   atualizarHistorico();
@@ -267,21 +290,25 @@ useEffect(() => {
 
 
 
-  const historicoFiltrado = historico
+  // Fonte única para todos os componentes de luminosidade: cartão, histórico,
+  // tabela e previsão usam a mesma curva simulada, sem depender do valor antigo da API.
+  const luminosidadeAtual = calcularLuminosidade(agora);
+  const iluminacaoExternaLigada = luminosidadeAtual < LIMITE_LUZ_EXTERNA;
 
-  .filter((leitura) =>
+  const historicoComLuminosidadeSimulada = historico.map((leitura) => {
+    const dataLeitura = leitura.timestamp ? new Date(leitura.timestamp) : agora;
+    const luminosidadeSimulada = calcularLuminosidade(dataLeitura);
+    return {
+      ...leitura,
+      luminosidade: luminosidadeSimulada,
+      iluminacaoExterna: luminosidadeSimulada < LIMITE_LUZ_EXTERNA,
+    };
+  });
 
-    filtroCenario === "todos" || leitura.cenario === filtroCenario
-
-  )
-
-  .slice(-limiteHistorico)
-
-  .reverse();
-
-
-
-
+  const historicoFiltrado = historicoComLuminosidadeSimulada
+    .filter((leitura) => filtroCenario === "todos" || leitura.cenario === filtroCenario)
+    .slice(-limiteHistorico)
+    .reverse();
 
   const itens = [
 
@@ -321,7 +348,7 @@ useEffect(() => {
 
       titulo: "Luminosidade",
 
-      valor: formatarNumero(sensores?.luminosidade, 0),
+      valor: formatarNumero(luminosidadeAtual, 0),
 
       unidade: "",
 
@@ -329,7 +356,7 @@ useEffect(() => {
 
       simbolo: "☀️",
 
-      alerta: Number(sensores?.luminosidade) < 500,
+      alerta: iluminacaoExternaLigada,
 
     },
 
@@ -366,6 +393,8 @@ useEffect(() => {
       horario: indice === 0 ? "Agora" : agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
       temperatura: Number((temperaturaAtual + variacaoTemperatura).toFixed(1)),
       umidade: Math.max(0, Math.min(100, Math.round(umidadeAtual + variacaoUmidade))),
+      luminosidade: calcularLuminosidade(agora),
+      iluminacaoExterna: calcularLuminosidade(agora) < LIMITE_LUZ_EXTERNA,
     };
   });
 
@@ -378,6 +407,9 @@ useEffect(() => {
     umidadePrevistaMinima < 50
       ? { titulo: "Atenção à umidade", texto: "A umidade simulada pode ficar abaixo de 50%. Confira a ventilação e se a cama do galinheiro está adequada.", nivel: "atencao" }
       : { titulo: "Umidade estável", texto: "A umidade simulada permanece em 50% ou mais. Continue monitorando o ambiente.", nivel: "normal" },
+    iluminacaoExternaLigada
+      ? { titulo: "Iluminação externa ligada", texto: `A luminosidade simulada está em ${luminosidadeAtual} unidades, abaixo do limite de ${LIMITE_LUZ_EXTERNA}. As luzes externas estão ligadas para ajudar a afastar predadores.`, nivel: "atencao" }
+      : { titulo: "Iluminação externa desligada", texto: `A luminosidade simulada está em ${luminosidadeAtual} unidades. As luzes externas serão acionadas automaticamente abaixo de ${LIMITE_LUZ_EXTERNA}.`, nivel: "normal" },
   ];
 
   const cartao = {
@@ -844,6 +876,16 @@ useEffect(() => {
 
             </div>
 
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "16px 0", borderTop: `1px solid ${cores.borda}` }}>
+              <span>Iluminação externa</span>
+              <strong style={{ color: iluminacaoExternaLigada ? cores.verde : "#758278" }}>
+                {iluminacaoExternaLigada ? "● Ligada" : "● Desligada"}
+              </strong>
+            </div>
+            <div style={{ color: "#7b8e83", fontSize: 12, lineHeight: 1.5 }}>
+              {`Luminosidade simulada: ${luminosidadeAtual} unidades · aciona abaixo de ${LIMITE_LUZ_EXTERNA}. Horário local: ${agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}.`}
+            </div>
+
           </article>
 
 
@@ -1112,17 +1154,17 @@ useEffect(() => {
 
   <p style={{ color: "#7b8e83", fontSize: 13 }}>
 
-    Evolução das leituras de iluminação
+    Evolução da luminosidade simulada ao longo dos horários das leituras
 
   </p>
 
 
 
-  {historico.length > 0 ? (
+  {historicoComLuminosidadeSimulada.length > 0 ? (
 
     <ResponsiveContainer width="100%" height={250}>
 
-      <LineChart data={historico}>
+      <LineChart data={historicoComLuminosidadeSimulada}>
 
         <CartesianGrid strokeDasharray="3 3" />
 
@@ -1858,6 +1900,23 @@ useEffect(() => {
               </article>
             </div>
 
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 22 }}>
+              <article style={cartao}>
+                <div style={{ color: "#60766a", fontSize: 14, fontWeight: 600 }}>Luminosidade atual simulada</div>
+                <div style={{ fontSize: 34, fontWeight: 700, margin: "14px 0 6px" }}>{luminosidadeAtual} unidades</div>
+                <div style={{ color: iluminacaoExternaLigada ? cores.verde : "#7b8e83", fontSize: 13, fontWeight: 700 }}>
+                  {iluminacaoExternaLigada ? "☀️ Baixa luminosidade · luzes externas ligadas" : "☀️ Luzes externas desligadas"}
+                </div>
+              </article>
+              <article style={cartao}>
+                <div style={{ color: "#60766a", fontSize: 14, fontWeight: 600 }}>Automação de iluminação</div>
+                <div style={{ fontSize: 26, fontWeight: 700, margin: "14px 0 6px", color: iluminacaoExternaLigada ? cores.verde : "#758278" }}>
+                  {iluminacaoExternaLigada ? "● LIGADA" : "● DESLIGADA"}
+                </div>
+                <div style={{ color: "#7b8e83", fontSize: 13 }}>Acende quando a luminosidade fica abaixo de {LIMITE_LUZ_EXTERNA} unidades.</div>
+              </article>
+            </div>
+
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20, marginBottom: 22 }}>
               <article style={cartao}>
                 <h3 style={{ margin: "0 0 6px", fontSize: 19 }}>Tendência de temperatura</h3>
@@ -1886,6 +1945,23 @@ useEffect(() => {
                 </ResponsiveContainer>
               </article>
             </div>
+
+            <article style={{ ...cartao, marginBottom: 22 }}>
+              <h3 style={{ margin: "0 0 6px", fontSize: 19 }}>Previsão de luminosidade e iluminação externa</h3>
+              <p style={{ color: "#7b8e83", fontSize: 13 }}>Curva diária simulada para as próximas 6 horas; abaixo de {LIMITE_LUZ_EXTERNA} unidades, a iluminação externa é ligada.</p>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={previsao}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e1e9e3" />
+                  <XAxis dataKey="horario" tick={{ fontSize: 11 }} />
+                  <YAxis domain={[0, 900]} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(valor) => [`${valor} unidades`, "Luminosidade"]} />
+                  <Line type="monotone" dataKey="luminosidade" name="Luminosidade" stroke="#e9a23b" strokeWidth={2} dot />
+                </LineChart>
+              </ResponsiveContainer>
+              <div style={{ marginTop: 12, padding: 12, borderRadius: 10, background: iluminacaoExternaLigada ? "#eaf5ed" : "#f4f7f5", color: iluminacaoExternaLigada ? cores.verde : cores.texto }}>
+                <strong>{iluminacaoExternaLigada ? "Iluminação externa ligada agora" : "Iluminação externa desligada agora"}</strong>
+              </div>
+            </article>
 
             <article style={cartao}>
               <h3 style={{ margin: "0 0 6px", fontSize: 19 }}>Recomendações informativas</h3>
