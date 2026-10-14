@@ -1,0 +1,258 @@
+/* Smart Chicken — login inspirado no Figma */
+:root {
+  --sc-purple: #4b1d56;
+  --sc-pink: #f47698;
+  --sc-cream: #faf7f0;
+  --sc-border: #e7e0d8;
+}
+
+.login-page, .login-page * { box-sizing: border-box; }
+
+.login-page {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  padding: 0;
+  margin: 0;
+  background: #fff;
+  font-family: Arial, sans-serif;
+}
+
+.login-card {
+  display: grid;
+  grid-template-columns: minmax(440px, 46%) minmax(0, 54%);
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  max-width: none;
+  overflow: hidden;
+  background: #fff;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.login-form-side {
+  min-width: 0;
+  padding: clamp(28px, 5vh, 64px) clamp(24px, 3.2vw, 64px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #fff;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--sc-purple);
+  font-size: clamp(20px, 1.65vw, 27px);
+  font-weight: 800;
+}
+
+.login-logo { font-size: clamp(28px, 2.2vw, 36px); }
+
+.login-tagline {
+  margin: 8px 0 28px;
+  text-align: center;
+  color: var(--sc-pink);
+  font-size: 13px;
+}
+
+.login-form-side h1 {
+  margin: 0;
+  text-align: center;
+  color: #302b32;
+  font-size: clamp(22px, 1.6vw, 27px);
+  font-weight: 750;
+}
+
+.login-subtitle {
+  margin: 8px 0 34px;
+  text-align: center;
+  color: #89838c;
+  font-size: 14px;
+}
+
+.login-form-side form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form-side form > label {
+  margin: 0 0 8px;
+  color: #625b65;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.login-form-side input:not([type="checkbox"]) {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 13px;
+  border: 1px solid var(--sc-border);
+  border-radius: 8px;
+  outline: none;
+  background: var(--sc-cream);
+  color: #302b32;
+  font-size: 14px;
+}
+
+.login-form-side input:focus {
+  border-color: var(--sc-purple);
+  box-shadow: 0 0 0 2px rgba(75, 29, 86, .1);
+}
+
+.login-password {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.login-password input { padding-right: 78px !important; }
+
+.login-toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--sc-purple);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.login-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #777079;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.login-remember input { accent-color: var(--sc-purple); }
+
+.login-help {
+  color: var(--sc-purple);
+  font-size: 11px;
+  text-align: right;
+}
+
+.login-error {
+  margin: 0 0 15px;
+  color: #c62850;
+  font-size: 13px;
+}
+
+.login-submit {
+  min-height: 46px;
+  border: none;
+  border-radius: 9px;
+  background: var(--sc-purple);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s;
+}
+
+.login-submit:hover { background: #63306e; }
+
+.login-footer {
+  margin: 28px 0 0;
+  text-align: center;
+  color: #99919b;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+/* A imagem contém o painel visual exportado do Figma. */
+.login-image-side {
+  position: relative;
+  display: block;
+  min-width: 0;
+  min-height: 100%;
+  padding: 0;
+  background-color: var(--sc-purple);
+  background-image: url("./login-fundo-figma.jpg");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: #fff;
+}
+
+.login-image-overlay { display: none; }
+
+@media (max-width: 900px) {
+  .login-card {
+    grid-template-columns: minmax(360px, 48%) minmax(0, 52%);
+  }
+
+  .login-form-side { padding-inline: 26px; }
+  .login-tagline { margin-bottom: 24px; }
+  .login-subtitle { margin-bottom: 26px; }
+}
+
+@media (max-width: 680px) {
+  .login-page {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--sc-cream);
+  }
+
+  .login-card {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--sc-cream);
+  }
+
+  .login-form-side {
+    min-height: 100vh;
+    min-height: 100dvh;
+    justify-content: flex-start;
+    padding: clamp(72px, 12vh, 110px) 24px 40px;
+    background: var(--sc-cream);
+  }
+
+  .login-brand { font-size: 22px; }
+  .login-tagline { margin: 12px 0 30px; font-size: 14px; }
+  .login-form-side h1 { font-size: 22px; }
+  .login-subtitle { margin: 8px 0 32px; }
+
+  .login-form-side input:not([type="checkbox"]) {
+    min-height: 46px;
+    background: #fff;
+  }
+
+  .login-password { margin-bottom: 24px; }
+  .login-options { margin-bottom: 24px; }
+  .login-submit { min-height: 50px; }
+  .login-footer { display: none; }
+  .login-image-side { display: none; }
+}
+
+@media (max-height: 650px) and (min-width: 681px) {
+  .login-form-side {
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .login-tagline { margin-bottom: 16px; }
+  .login-subtitle { margin-bottom: 18px; }
+  .login-password { margin-bottom: 12px; }
+  .login-options { margin-bottom: 14px; }
+  .login-footer { margin-top: 16px; }
+}

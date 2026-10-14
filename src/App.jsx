@@ -1,6 +1,8 @@
 
 
 import { useCallback, useEffect, useState } from "react";
+import Login from "./Login";
+import "./App.css";
 
 import {
 
@@ -25,6 +27,10 @@ import {
   YAxis,
 
   CartesianGrid,
+
+  ReferenceArea,
+
+  ReferenceLine,
 
   Tooltip,
 
@@ -110,6 +116,42 @@ function App() {
 
   const [pagina, setPagina] = useState("dashboard");
   const [agora, setAgora] = useState(() => new Date());
+  const [autenticado, setAutenticado] = useState(() => {
+    try {
+      return (
+        sessionStorage.getItem("smartChickenAuth") === "true" ||
+        localStorage.getItem("smartChickenAuth") === "true"
+      );
+    } catch {
+      return false;
+    }
+  });
+
+  function concluirLogin({ lembrar }) {
+    try {
+      sessionStorage.removeItem("smartChickenAuth");
+      localStorage.removeItem("smartChickenAuth");
+      if (lembrar) {
+        localStorage.setItem("smartChickenAuth", "true");
+      } else {
+        sessionStorage.setItem("smartChickenAuth", "true");
+      }
+    } catch (e) {
+      console.warn("Não foi possível salvar a sessão neste navegador.", e);
+    }
+    setAutenticado(true);
+  }
+
+  function sair() {
+    try {
+      sessionStorage.removeItem("smartChickenAuth");
+      localStorage.removeItem("smartChickenAuth");
+    } catch (e) {
+      console.warn("Não foi possível limpar a sessão neste navegador.", e);
+    }
+    setAutenticado(false);
+    setPagina("dashboard");
+  }
 
 
 
@@ -189,6 +231,20 @@ setHistorico(
     .map((leitura) => ({
 
       ...leitura,
+
+      // Normaliza valores da API: o Recharts precisa de números, não texto numérico.
+      temperatura:
+        leitura.temperatura === null || leitura.temperatura === undefined || leitura.temperatura === ""
+          ? null
+          : Number(leitura.temperatura),
+      umidade:
+        leitura.umidade === null || leitura.umidade === undefined || leitura.umidade === ""
+          ? null
+          : Number(leitura.umidade),
+      distancia:
+        leitura.distancia === null || leitura.distancia === undefined || leitura.distancia === ""
+          ? null
+          : Number(leitura.distancia),
 
       horario: leitura.timestamp
 
@@ -428,9 +484,13 @@ useEffect(() => {
 
 
 
+  if (!autenticado) {
+    return <Login onLogin={concluirLogin} />;
+  }
+
   return (
 
-    <div style={{
+    <div className="smart-app" style={{
 
       minHeight: "100vh",
 
@@ -442,7 +502,7 @@ useEffect(() => {
 
     }}>
 
-      <header style={{
+      <header className="smart-header" style={{
 
         background: "#ffffff",
 
@@ -492,24 +552,32 @@ useEffect(() => {
 
 
 
-        <div style={{
-
-          color: "#237a50",
-
-          background: "#e5f3e9",
-
-          padding: "9px 13px",
-
-          borderRadius: 30,
-
-          fontSize: 13,
-
-          fontWeight: 600,
-
-        }}>
-
-          ● {erro ? "Conexão com problema" : sensores ? "Sistema conectado" : "Conectando..."}
-
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{
+            color: "#237a50",
+            background: "#e5f3e9",
+            padding: "9px 13px",
+            borderRadius: 30,
+            fontSize: 13,
+            fontWeight: 600,
+          }}>
+            ● {erro ? "Conexão com problema" : sensores ? "Sistema conectado" : "Conectando..."}
+          </div>
+          <button
+            type="button"
+            onClick={sair}
+            style={{
+              border: `1px solid ${cores.borda}`,
+              background: "#ffffff",
+              color: cores.texto,
+              padding: "9px 13px",
+              borderRadius: 10,
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            Sair
+          </button>
         </div>
 
       </header>
@@ -517,7 +585,7 @@ useEffect(() => {
 
 
 <nav
-
+  className="smart-nav"
   style={{
 
     display: "flex",
@@ -588,7 +656,7 @@ useEffect(() => {
 
 
 
-      <main style={{ maxWidth: 1200, margin: "0 auto", padding: "30px 5%" }}>
+      <main className="smart-main" style={{ maxWidth: 1200, margin: "0 auto", padding: "30px 5%" }}>
 
       {pagina === "dashboard" && (
 
@@ -900,7 +968,7 @@ useEffect(() => {
 
     display: "grid",
 
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gridTemplateColumns: "minmax(0, 1fr)",
 
     width: "100%",
 
@@ -934,7 +1002,11 @@ useEffect(() => {
 
         <LineChart data={historico}>
 
-          <CartesianGrid strokeDasharray="3 3" stroke="#e1e9e3" />
+          <CartesianGrid stroke="#e8e1d8" vertical={false} />
+
+          <ReferenceArea y1={24} y2={30} fill="#dcefe5" fillOpacity={0.7} />
+          <ReferenceLine y={24} stroke="#8dbba2" strokeWidth={1.5} />
+          <ReferenceLine y={30} stroke="#8dbba2" strokeWidth={1.5} />
 
           <XAxis dataKey="horario" tick={{ fontSize: 11 }} />
 
@@ -1008,11 +1080,11 @@ useEffect(() => {
 
             name="Temperatura (°C)"
 
-            stroke="#e07835"
+            stroke="#27875c"
 
-            strokeWidth={2}
+            strokeWidth={2.5}
 
-            dot={false}
+            dot={{ r: 3, fill: "#27875c", strokeWidth: 1 }}
 
           />
 
@@ -1126,7 +1198,7 @@ useEffect(() => {
 
             strokeWidth={2}
 
-            dot={false}
+            dot={{ r: 3, strokeWidth: 1 }}
 
           />
 
@@ -1258,7 +1330,7 @@ useEffect(() => {
 
           strokeWidth={2}
 
-          dot={false}
+          dot={{ r: 3, strokeWidth: 1 }}
 
         />
 

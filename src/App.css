@@ -1,184 +1,108 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
-
-  &:hover {
-    border-color: var(--accent-border);
+/* Smart Chicken — CSS enxuto para recuperar os gráficos e manter o menu roxo.
+   Não estiliza elementos internos do Recharts: a biblioteca controla o SVG e os eixos. */
+:root {
+  font-family: Inter, Arial, sans-serif;
+  color: #302833;
+  background: #faf7ef;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; width: 100%; min-width: 320px; min-height: 100%; }
+body { background: #faf7ef; overflow-x: hidden; }
+button, input, select, textarea { font: inherit; }
+button { -webkit-tap-highlight-color: transparent; }
+.smart-app {
+  --purple: #4a2054; --pink: #f4779b; --cream: #faf7ef; --line: #e7e0d7;
+  min-height: 100vh; background: var(--cream); color: #302833;
+  font-family: Inter, Arial, sans-serif;
+}
+.smart-header {
+  position: relative; z-index: 5; min-height: 64px;
+  padding: 12px 24px 12px 214px !important; display: flex;
+  align-items: center; justify-content: space-between; gap: 14px;
+  flex-wrap: wrap; background: #fff !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+.smart-header h1 { margin: 0; color: var(--purple) !important; font-size: 20px !important; font-weight: 800 !important; }
+.smart-header > div:first-child > div:first-child { background: #f1e8f2 !important; border-radius: 12px !important; }
+.smart-header span { color: #817783; }
+.smart-header button { border: 1px solid var(--line) !important; background: #fff !important; color: var(--purple) !important; }
+.smart-nav {
+  position: fixed !important; z-index: 20; inset: 0 auto 0 0; width: 190px;
+  padding: 112px 0 20px !important; display: flex !important;
+  flex-direction: column !important; align-items: stretch !important;
+  justify-content: flex-start !important; gap: 4px !important;
+  background: var(--purple) !important; border: 0 !important;
+}
+.smart-nav::before {
+  content: "🐓\A SMART CHICKEN"; white-space: pre-line; position: absolute;
+  top: 20px; left: 12px; right: 12px; color: #fff; text-align: center;
+  font-weight: 800; line-height: 1.8; font-size: 14px;
+}
+.smart-nav button {
+  width: 100%; min-height: 40px; text-align: left; padding: 10px 16px !important;
+  border: 0 !important; border-radius: 0 !important; background: transparent !important;
+  color: #fff !important; font-weight: 600 !important;
+}
+.smart-nav button:hover { background: rgba(255,255,255,.12) !important; }
+.smart-nav button[style*="rgb(35, 122, 80)"] { background: #80618a !important; box-shadow: inset 4px 0 var(--pink); }
+.smart-main {
+  width: auto !important; max-width: none !important; min-width: 0;
+  margin: 0 0 0 190px !important; padding: 24px clamp(16px, 2.2vw, 30px) 24px !important;
+  background: var(--cream);
+}
+.smart-main h2, .smart-main h3 { color: var(--purple); line-height: 1.3; }
+.smart-main article { min-width: 0; background: #fff !important; border: 1px solid var(--line) !important; border-radius: 14px !important; box-shadow: 0 2px 8px rgba(62, 36, 57, .035); }
+.smart-main table { width: 100%; border-collapse: collapse; }
+.smart-main th { color: #716675; font-weight: 700; background: #faf7ef; }
+.smart-main th, .smart-main td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+.smart-main select, .smart-main input { max-width: 100%; border: 1px solid var(--line); border-radius: 9px; padding: 9px 11px; background: #fff; }
+@media (min-width: 700px) and (max-width: 1099px) {
+  .smart-header { padding-left: 205px !important; }
+  .smart-main { padding: 20px 16px !important; }
+  .smart-main > section[style*="repeat(auto-fit"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+}
+@media (max-width: 699px) {
+  .smart-header { min-height: auto; padding: 12px 14px !important; flex-wrap: wrap !important; gap: 10px !important; }
+  .smart-header h1 { font-size: 18px !important; }
+  .smart-header > div:first-child { gap: 9px !important; min-width: 0; }
+  .smart-header > div:last-child { width: 100%; justify-content: space-between; }
+  .smart-nav {
+    position: sticky !important; top: 0; width: 100%; padding: 8px !important;
+    display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px !important; background: var(--purple) !important; box-shadow: 0 2px 7px rgba(0,0,0,.08);
   }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
+  .smart-nav::before { display: none; }
+  .smart-nav button {
+    min-width: 0; min-height: 40px; padding: 8px 4px !important;
+    border: 1px solid rgba(255,255,255,.2) !important; border-radius: 8px !important;
+    color: #fff !important; background: transparent !important; text-align: center;
+    font-size: 12px !important; line-height: 1.2; overflow-wrap: anywhere;
+  }
+  .smart-nav button[style*="rgb(35, 122, 80)"] { background: #80618a !important; border-color: #d8c4dc !important; box-shadow: none; color: #fff !important; }
+  .smart-main { width: 100% !important; margin: 0 !important; padding: 16px 12px 22px !important; }
+  .smart-main h2 { font-size: 21px !important; }
+  .smart-main h3 { font-size: 16px !important; }
+  .smart-main article { padding: 14px !important; border-radius: 12px !important; }
+  .smart-main > section { gap: 12px !important; margin-bottom: 16px !important; }
+  .smart-main > section[style*="repeat(auto-fit"] { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .smart-main > section[style*="minmax(0, 1fr)"] { grid-template-columns: minmax(0, 1fr) !important; }
+  .smart-main table { min-width: 680px; }
+  .smart-main article:has(table) { overflow-x: auto; }
+  .smart-main footer { padding: 18px 0 8px !important; text-align: center; font-size: 12px; }
+}
+
+/* Mobile: reduz apenas a altura externa dos gráficos; não altera SVG, eixos ou linhas. */
+@media (max-width: 699px) {
+  .smart-main .recharts-responsive-container {
+    height: 190px !important;
   }
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
-  padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
-}
-
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
-}
-
-.ticks {
-  position: relative;
-  width: 100%;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
-  }
-
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
-  }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
-  }
+@media (max-width: 390px) {
+  .smart-main { padding-inline: 10px !important; }
+  .smart-main > section[style*="repeat(auto-fit"] { grid-template-columns: minmax(0, 1fr) !important; }
 }
